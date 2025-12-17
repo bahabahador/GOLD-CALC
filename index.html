@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ماشین حساب قیمت طلا</title>
+    <meta name="theme-color" content="#D4AF37">
+    <meta name="description" content="برنامه محاسبه قیمت فروش طلا با در نظر گرفتن اجرت، سود، مالیات و وزن">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #121212;
+            color: #f5f5f5;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+        
+        h1 {
+            color: #D4AF37;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .app-description {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .install-notice {
+            background-color: rgba(212, 175, 55, 0.15);
+            border: 2px solid #D4AF37;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        }
+        
+        .install-notice h3 {
+            color: #D4AF37;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        
+        .install-notice p {
+            color: #ddd;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .privacy-badge {
+            display: inline-block;
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+            border: 1px solid #4CAF50;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: #1e1e1e;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+            margin-bottom: 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #aaa;
+            padding: 15px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .tab-btn.active {
+            background-color: #2a2a2a;
+            color: #D4AF37;
+            border-bottom: 3px solid #D4AF37;
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: #2a2a2a;
+            border-radius: 0 0 10px 10px;
+            padding: 25px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            margin-bottom: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #D4AF37;
+            font-weight: 600;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px;
+            background-color: #1e1e1e;
+            border: 2px solid #333;
+            border-radius: 8px;
+            color: #f5f5f5;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #D4AF37;
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #D4AF37 0%, #b8941f 100%);
+            color: #121212;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3);
+        }
+        
+        .calculate-btn:hover {
+            background: linear-gradient(135deg, #e6c158 0%, #D4AF37 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(212, 175, 55, 0.4);
+        }
+        
+        .results {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            border-right: 4px solid #D4AF37;
+            display: none;
+        }
+        
+        .results h3 {
+            color: #D4AF37;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .result-label {
+            color: #aaa;
+        }
+        
+        .result-value {
+            color: #f5f5f5;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .history {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .history h3 {
+            color: #D4AF37;
+            font-size: 20px;
+        }
+        
+        .clear-history {
+            background-color: #333;
+            color: #f5f5f5;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .clear-history:hover {
+            background-color: #444;
+        }
+        
+        .history-item {
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-right: 3px solid #D4AF37;
+        }
+        
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .history-datetime {
+            color: #aaa;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        
+        .history-details {
+            color: #f5f5f5;
+            font-size: 14px;
+        }
+        
+        .history-details div {
+            margin-bottom: 4px;
+        }
+        
+        .install-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #D4AF37 0%, #b8941f 100%);
+            color: #121212;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .install-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 14px;
+            padding-bottom: 20px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+        }
+        
+        .footer-name {
+            color: #D4AF37;
+            font-weight: 600;
+        }
+        
+        .note {
+            background-color: rgba(212, 175, 55, 0.1);
+            border-right: 3px solid #D4AF37;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #ddd;
+        }
+        
+        .privacy-info {
+            background-color: rgba(33, 150, 243, 0.1);
+            border-right: 3px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .privacy-icon {
+            font-size: 24px;
+            color: #2196F3;
+        }
+        
+        .privacy-text {
+            color: #90CAF9;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .tab-content {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .result-value {
+                font-size: 16px;
+            }
+            
+            .install-btn {
+                bottom: 15px;
+                left: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            .install-notice {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                width: 100%;
+            }
+            
+            h1 {
+                font-size: 22px;
+            }
+        }
+        
+        /* PWA نصب */
+        @media (display-mode: standalone) {
+            .install-btn, .install-notice {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧮 ماشین حساب طلا</h1>
+            <p class="app-description">محاسبه دقیق قیمت طلا با در نظر گرفتن اجرت، سود، مالیات و تبدیل عیار</p>
+        </header>
+        
+        <div class="install-notice">
+            <h3>📲 برنامه را نصب کنید!</h3>
+            <p>برای تجربه بهتر و دسترسی سریع‌تر، این برنامه را بر روی گوشی خود نصب نمایید.</p>
+            <p><strong>توجه:</strong> تمام اطلاعات و تاریخچه محاسبات فقط در گوشی شما ذخیره می‌شود و هیچ اطلاعاتی به اینترنت ارسال نمی‌گردد.</p>
+            <div class="privacy-badge">🔒 حریم خصوصی کامل</div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tab1">محاسبه قیمت فروش</button>
+            <button class="tab-btn" data-tab="tab2">تبدیل عیار طلا</button>
+        </div>
+        
+        <!-- تب اول: محاسبه قیمت فروش طلا -->
+        <div id="tab1" class="tab-content active">
+            <div class="privacy-info">
+                <div class="privacy-icon">🔒</div>
+                <div class="privacy-text">
+                    تمام اطلاعات وارد شده و نتایج محاسبات فقط در مرورگر شما ذخیره می‌شود. هیچ داده‌ای به سرور ارسال نمی‌شود و حریم خصوصی شما کاملاً حفظ می‌شود.
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="goldPrice">قیمت طلای خام (تومان برای یک گرم)</label>
+                <input type="text" id="goldPrice" placeholder="مثال: 12,300,000" data-type="price">
+            </div>
+            
+            <div class="input-group">
+                <label for="wagePercent">درصد اجرت ساخت (%)</label>
+                <input type="number" id="wagePercent" value="15" min="0" max="100">
+            </div>
+            
+            <div class="input-group">
+                <label for="profitPercent">درصد سود طلا فروش (%)</label>
+                <input type="number" id="profitPercent" value="7" min="0" max="100">
+            </div>
+            
+            <div class="input-group">
+                <label for="taxPercent">درصد مالیات (%)</label>
+                <input type="number" id="taxPercent" value="10" min="0" max="100">
+            </div>
+            
+            <div class="input-group">
+                <label for="weight">وزن طلا (گرم)</label>
+                <input type="number" id="weight" placeholder="مثال: 5.090" step="0.001" min="0.001">
+            </div>
+            
+            <button class="calculate-btn" id="calculateBtn1">محاسبه قیمت نهایی</button>
+            
+            <div class="note">
+                <strong>توجه:</strong> محاسبات بر اساس فرمول دقیق قیمت‌گذاری طلا انجام می‌شود.
+            </div>
+            
+            <div id="results1" class="results">
+                <h3>📊 نتایج محاسبه</h3>
+                <div class="result-item">
+                    <span class="result-label">قیمت با اجرت (هر گرم):</span>
+                    <span class="result-value" id="priceWithWage">0 تومان</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">قیمت با اجرت و سود (هر گرم):</span>
+                    <span class="result-value" id="priceWithWageProfit">0 تومان</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">مبلغ اجرت و سود:</span>
+                    <span class="result-value" id="wageProfitAmount">0 تومان</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">مبلغ با مالیات:</span>
+                    <span class="result-value" id="taxedAmount">0 تومان</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">قیمت پایه هر گرم:</span>
+                    <span class="result-value" id="basePricePerGram">0 تومان</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label" style="color:#D4AF37; font-size:20px;">💰 قیمت نهایی کل:</span>
+                    <span class="result-value" id="finalPrice" style="color:#D4AF37; font-size:22px;">0 تومان</span>
+                </div>
+            </div>
+            
+            <div class="history">
+                <div class="history-header">
+                    <h3>📜 تاریخچه محاسبات (تب اول)</h3>
+                    <button class="clear-history" id="clearHistory1">پاک کردن تاریخچه</button>
+                </div>
+                <div id="historyList1"></div>
+            </div>
+        </div>
+        
+        <!-- تب دوم: تبدیل عیار طلا -->
+        <div id="tab2" class="tab-content">
+            <div class="privacy-info">
+                <div class="privacy-icon">🔒</div>
+                <div class="privacy-text">
+                    تمام اطلاعات وارد شده و نتایج محاسبات فقط در مرورگر شما ذخیره می‌شود. هیچ داده‌ای به سرور ارسال نمی‌شود و حریم خصوصی شما کاملاً حفظ می‌شود.
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="goldPrice750">قیمت طلای ۱۸ عیار (عیار ۷۵۰) (تومان)</label>
+                <input type="text" id="goldPrice750" placeholder="مثال: 3,000,000" data-type="price">
+            </div>
+            
+            <button class="calculate-btn" id="calculateBtn2">محاسبه قیمت‌ها</button>
+            
+            <div class="note">
+                <strong>فرمول‌های محاسبه:</strong><br>
+                قیمت خرید از مشتری (عیار ۷۳۵) = (قیمت طلای ۷۵۰ ÷ ۷۵۰) × ۷۳۵<br>
+                قیمت تعویض/فروش (عیار ۷۴۰) = (قیمت طلای ۷۵۰ ÷ ۷۵۰) × ۷۴۰
+            </div>
+            
+            <div id="results2" class="results">
+                <h3>📊 نتایج تبدیل عیار</h3>
+                <div class="result-item">
+                    <span class="result-label">قیمت خرید از مشتری (عیار ۷۳۵):</span>
+                    <span class="result-value" id="price735">0 تومان</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">قیمت تعویض/فروش (عیار ۷۴۰):</span>
+                    <span class="result-value" id="price740">0 تومان</span>
+                </div>
+            </div>
+            
+            <div class="history">
+                <div class="history-header">
+                    <h3>📜 تاریخچه محاسبات (تب دوم)</h3>
+                    <button class="clear-history" id="clearHistory2">پاک کردن تاریخچه</button>
+                </div>
+                <div id="historyList2"></div>
+            </div>
+        </div>
+        
+        <button id="installBtn" class="install-btn" title="نصب برنامه">
+            📲
+        </button>
+        
+        <footer>
+            <p>© ۲۰۲۵ ماشین حساب طلا - تمامی محاسبات به تومان می‌باشند</p>
+            <p class="footer-name">توسط بهادر محمدزاده</p>
+            <p>این برنامه به صورت Progressive Web App طراحی شده و قابل نصب بر روی گوشی موبایل است</p>
+            <p>🔒 تمام اطلاعات فقط در گوشی شما ذخیره می‌شود و هیچ اطلاعاتی به اینترنت ارسال نمی‌گردد</p>
+        </footer>
+    </div>
+
+    <script>
+        // تب‌ها
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+                
+                // غیرفعال کردن همه تب‌ها
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // فعال کردن تب انتخاب شده
+                btn.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+                
+                // ذخیره تب انتخاب شده
+                localStorage.setItem('selectedTab', tabId);
+            });
+        });
+        
+        // بازگردانی تب انتخاب شده
+        const savedTab = localStorage.getItem('selectedTab');
+        if (savedTab) {
+            const tabBtn = document.querySelector(`[data-tab="${savedTab}"]`);
+            if (tabBtn) {
+                tabBtn.click();
+            }
+        }
+        
+        // فرمت کردن اعداد با کاما
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        // حذف کاما از اعداد برای محاسبات
+        function parseFormattedNumber(str) {
+            if (!str) return 0;
+            return parseFloat(str.replace(/,/g, ''));
+        }
+        
+        // فرمت کردن خودکار قیمت هنگام تایپ
+        const priceInputs = document.querySelectorAll('input[data-type="price"]');
+        
+        priceInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                let value = this.value.replace(/,/g, '');
+                
+                // فقط اعداد مجاز
+                if (!/^\d*$/.test(value)) {
+                    value = value.replace(/[^\d]/g, '');
+                }
+                
+                // فرمت با کاما
+                if (value.length > 0) {
+                    this.value = formatNumber(value);
+                } else {
+                    this.value = '';
+                }
+            });
+        });
+        
+        // تابع گرفتن تاریخ و زمان شمسی
+        function getPersianDateTime() {
+            const now = new Date();
+            
+            // تاریخ شمسی ساده شده (برای نمایش)
+            const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            
+            // محاسبه تاریخ شمسی (الگوریتم ساده شده)
+            const gregorianYear = now.getFullYear();
+            const gregorianMonth = now.getMonth() + 1;
+            const gregorianDay = now.getDate();
+            
+            // تبدیل ساده (این الگوریتم دقیق نیست، برای نمایش استفاده می‌شود)
+            let persianYear = gregorianYear - 621;
+            let persianMonth, persianDay;
+            
+            if (gregorianMonth < 4 || (gregorianMonth === 4 && gregorianDay < 21)) {
+                persianYear--;
+                persianMonth = (gregorianMonth + 8) % 12 + 1;
+                persianDay = gregorianDay + 20;
+                if (persianDay > 31) {
+                    persianDay -= 31;
+                    persianMonth++;
+                }
+            } else {
+                persianMonth = (gregorianMonth + 8) % 12 + 1;
+                persianDay = gregorianDay - 20;
+                if (persianDay < 1) {
+                    persianDay += 31;
+                    persianMonth--;
+                }
+            }
+            
+            // زمان
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            
+            return `${persianYear}/${persianMonth}/${persianDay} - ${hours}:${minutes}`;
+        }
+        
+        // تب اول: محاسبه قیمت فروش طلا
+        const calculateBtn1 = document.getElementById('calculateBtn1');
+        const results1 = document.getElementById('results1');
+        
+        calculateBtn1.addEventListener('click', function() {
+            // دریافت مقادیر ورودی
+            const goldPrice = parseFormattedNumber(document.getElementById('goldPrice').value);
+            const wagePercent = parseFloat(document.getElementById('wagePercent').value);
+            const profitPercent = parseFloat(document.getElementById('profitPercent').value);
+            const taxPercent = parseFloat(document.getElementById('taxPercent').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            
+            // اعتبارسنجی
+            if (!goldPrice || goldPrice <= 0) {
+                alert('لطفا قیمت طلای خام را وارد کنید');
+                return;
+            }
+            
+            if (!weight || weight <= 0) {
+                alert('لطفا وزن طلا را وارد کنید');
+                return;
+            }
+            
+            // محاسبات بر اساس فرمول داده شده
+            // مرحله ۱: محاسبه قیمت با اجرت
+            const priceWithWage = goldPrice + (goldPrice * (wagePercent / 100));
+            
+            // مرحله ۲: محاسبه قیمت با اجرت و سود
+            const priceWithWageProfit = priceWithWage + (priceWithWage * (profitPercent / 100));
+            
+            // مرحله ۳: محاسبه مبلغ اجرت و سود
+            const wageProfitAmount = priceWithWageProfit - goldPrice;
+            
+            // مرحله ۴: محاسبه مبلغ با مالیات
+            const taxedAmount = wageProfitAmount + (wageProfitAmount * (taxPercent / 100));
+            
+            // مرحله ۵: محاسبه قیمت پایه برای ۱ گرم
+            const basePricePerGram = taxedAmount + goldPrice;
+            
+            // مرحله ۶: محاسبه قیمت نهایی کل
+            const finalPrice = basePricePerGram * weight;
+            
+            // نمایش نتایج
+            document.getElementById('priceWithWage').textContent = formatNumber(Math.round(priceWithWage)) + ' تومان';
+            document.getElementById('priceWithWageProfit').textContent = formatNumber(Math.round(priceWithWageProfit)) + ' تومان';
+            document.getElementById('wageProfitAmount').textContent = formatNumber(Math.round(wageProfitAmount)) + ' تومان';
+            document.getElementById('taxedAmount').textContent = formatNumber(Math.round(taxedAmount)) + ' تومان';
+            document.getElementById('basePricePerGram').textContent = formatNumber(Math.round(basePricePerGram)) + ' تومان';
+            document.getElementById('finalPrice').textContent = formatNumber(Math.round(finalPrice)) + ' تومان';
+            
+            // نمایش بخش نتایج
+            results1.style.display = 'block';
+            
+            // ذخیره در تاریخچه
+            saveToHistory1({
+                goldPrice: goldPrice,
+                wagePercent: wagePercent,
+                profitPercent: profitPercent,
+                taxPercent: taxPercent,
+                weight: weight,
+                finalPrice: Math.round(finalPrice),
+                dateTime: getPersianDateTime()
+            });
+        });
+        
+        // تب دوم: تبدیل عیار طلا
+        const calculateBtn2 = document.getElementById('calculateBtn2');
+        const results2 = document.getElementById('results2');
+        
+        calculateBtn2.addEventListener('click', function() {
+            // دریافت قیمت طلای 750 عیار
+            const goldPrice750 = parseFormattedNumber(document.getElementById('goldPrice750').value);
+            
+            // اعتبارسنجی
+            if (!goldPrice750 || goldPrice750 <= 0) {
+                alert('لطفا قیمت طلای ۱۸ عیار را وارد کنید');
+                return;
+            }
+            
+            // محاسبات
+            const pricePerUnit = goldPrice750 / 750;
+            const price735 = Math.round(pricePerUnit * 735);
+            const price740 = Math.round(pricePerUnit * 740);
+            
+            // نمایش نتایج
+            document.getElementById('price735').textContent = formatNumber(price735) + ' تومان';
+            document.getElementById('price740').textContent = formatNumber(price740) + ' تومان';
+            
+            // نمایش بخش نتایج
+            results2.style.display = 'block';
+            
+            // ذخیره در تاریخچه
+            saveToHistory2({
+                goldPrice750: goldPrice750,
+                price735: price735,
+                price740: price740,
+                dateTime: getPersianDateTime()
+            });
+        });
+        
+        // مدیریت تاریخچه تب اول
+        function saveToHistory1(calculation) {
+            let history = JSON.parse(localStorage.getItem('goldCalcHistory1') || '[]');
+            
+            // اضافه کردن محاسبه جدید به ابتدای آرایه
+            history.unshift(calculation);
+            
+            // محدود کردن تاریخچه به ۱۰ مورد
+            if (history.length > 10) {
+                history = history.slice(0, 10);
+            }
+            
+            localStorage.setItem('goldCalcHistory1', JSON.stringify(history));
+            displayHistory1();
+        }
+        
+        function displayHistory1() {
+            const historyList = document.getElementById('historyList1');
+            const history = JSON.parse(localStorage.getItem('goldCalcHistory1') || '[]');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="history-item" style="text-align:center; color:#aaa;">تاریخچه‌ای وجود ندارد</div>';
+                return;
+            }
+            
+            historyList.innerHTML = '';
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div class="history-datetime">📅 ${item.dateTime}</div>
+                    <div class="history-details">
+                        <div>قیمت طلا: ${formatNumber(item.goldPrice)} تومان</div>
+                        <div>وزن: ${item.weight} گرم</div>
+                        <div>اجرت: ${item.wagePercent}% - سود: ${item.profitPercent}% - مالیات: ${item.taxPercent}%</div>
+                        <div style="color:#D4AF37; margin-top:5px;">💰 قیمت نهایی: ${formatNumber(item.finalPrice)} تومان</div>
+                    </div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // مدیریت تاریخچه تب دوم
+        function saveToHistory2(calculation) {
+            let history = JSON.parse(localStorage.getItem('goldCalcHistory2') || '[]');
+            
+            // اضافه کردن محاسبه جدید به ابتدای آرایه
+            history.unshift(calculation);
+            
+            // محدود کردن تاریخچه به ۱۰ مورد
+            if (history.length > 10) {
+                history = history.slice(0, 10);
+            }
+            
+            localStorage.setItem('goldCalcHistory2', JSON.stringify(history));
+            displayHistory2();
+        }
+        
+        function displayHistory2() {
+            const historyList = document.getElementById('historyList2');
+            const history = JSON.parse(localStorage.getItem('goldCalcHistory2') || '[]');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="history-item" style="text-align:center; color:#aaa;">تاریخچه‌ای وجود ندارد</div>';
+                return;
+            }
+            
+            historyList.innerHTML = '';
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div class="history-datetime">📅 ${item.dateTime}</div>
+                    <div class="history-details">
+                        <div>قیمت طلای ۷۵۰: ${formatNumber(item.goldPrice750)} تومان</div>
+                        <div>قیمت خرید (۷۳۵): ${formatNumber(item.price735)} تومان</div>
+                        <div>قیمت تعویض (۷۴۰): ${formatNumber(item.price740)} تومان</div>
+                    </div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // پاک کردن تاریخچه‌ها
+        document.getElementById('clearHistory1').addEventListener('click', function() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید تاریخچه تب اول را پاک کنید؟')) {
+                localStorage.removeItem('goldCalcHistory1');
+                displayHistory1();
+            }
+        });
+        
+        document.getElementById('clearHistory2').addEventListener('click', function() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید تاریخچه تب دوم را پاک کنید؟')) {
+                localStorage.removeItem('goldCalcHistory2');
+                displayHistory2();
+            }
+        });
+        
+        // فعال کردن دکمه محاسبه با کلید Enter
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                const activeTab = document.querySelector('.tab-content.active');
+                if (activeTab.id === 'tab1') {
+                    calculateBtn1.click();
+                } else if (activeTab.id === 'tab2') {
+                    calculateBtn2.click();
+                }
+            }
+        });
+        
+        // PWA: قابلیت نصب
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+        const installNotice = document.querySelector('.install-notice');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // جلوگیری از نمایش خودکار پیشنهاد نصب
+            e.preventDefault();
+            // ذخیره event برای استفاده بعدی
+            deferredPrompt = e;
+            
+            // نمایش دکمه نصب و اعلان نصب
+            installBtn.style.display = 'flex';
+            
+            // اگر برنامه قبلاً نصب نشده، اعلان نصب را نشان بده
+            if (!window.matchMedia('(display-mode: standalone)').matches) {
+                installNotice.style.display = 'block';
+            }
+        });
+        
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            
+            // نمایش پیشنهاد نصب
+            deferredPrompt.prompt();
+            
+            // منتظر ماندن برای انتخاب کاربر
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+                console.log('کاربر برنامه را نصب کرد');
+                installBtn.style.display = 'none';
+                installNotice.style.display = 'none';
+            } else {
+                console.log('کاربر از نصب برنامه صرف نظر کرد');
+            }
+            
+            // پاک کردن deferredPrompt
+            deferredPrompt = null;
+        });
+        
+        // مخفی کردن دکمه نصب و اعلان پس از نصب
+        window.addEventListener('appinstalled', () => {
+            installBtn.style.display = 'none';
+            installNotice.style.display = 'none';
+            deferredPrompt = null;
+        });
+        
+        // بررسی وضعیت PWA
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            installBtn.style.display = 'none';
+            installNotice.style.display = 'none';
+        }
+        
+        // نمایش پیام تأکید بر ذخیره محلی اطلاعات
+        window.addEventListener('load', function() {
+            console.log('تمام اطلاعات این برنامه فقط در مرورگر شما ذخیره می‌شود.');
+            console.log('هیچ اطلاعاتی به اینترنت ارسال نمی‌گردد.');
+            console.log('تاریخچه محاسبات در localStorage مرورگر ذخیره می‌شود.');
+        });
+        
+        // ایجاد service worker برای PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => {
+                    console.log('ServiceWorker ثبت نشد: ', err);
+                });
+            });
+        }
+        
+        // نمایش تاریخچه‌ها هنگام بارگذاری صفحه
+        displayHistory1();
+        displayHistory2();
+        
+        // پر کردن فیلدها با مثال برای آزمایش
+        window.addEventListener('load', function() {
+            // فقط اگر تاریخچه‌ای وجود ندارد، مثال‌ها را پر کن
+            const history1 = JSON.parse(localStorage.getItem('goldCalcHistory1') || '[]');
+            if (history1.length === 0) {
+                document.getElementById('goldPrice').value = '12,300,000';
+                document.getElementById('weight').value = '5.090';
+            }
+            
+            const history2 = JSON.parse(localStorage.getItem('goldCalcHistory2') || '[]');
+            if (history2.length === 0) {
+                document.getElementById('goldPrice750').value = '3,000,000';
+            }
+        });
+    </script>
+    
+    <!-- Service Worker برای PWA -->
+    <script>
+        // ایجاد فایل Service Worker مجازی
+        const swContent = `
+        self.addEventListener('install', function(event) {
+            event.waitUntil(
+                caches.open('gold-calc-v2').then(function(cache) {
+                    return cache.addAll([
+                        '/',
+                        '/index.html'
+                    ]);
+                })
+            );
+        });
+
+        self.addEventListener('fetch', function(event) {
+            event.respondWith(
+                caches.match(event.request).then(function(response) {
+                    return response || fetch(event.request);
+                })
+            );
+        });
+        `;
+        
+        // ایجاد Blob از کد Service Worker
+        const blob = new Blob([swContent], { type: 'application/javascript' });
+        const swURL = URL.createObjectURL(blob);
+        
+        // ثبت Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(swURL)
+                .then(registration => {
+                    console.log('Service Worker ثبت شد با محدوده:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('ثبت Service Worker ناموفق بود:', error);
+                });
+        }
+    </script>
+    
+    <!-- Manifest برای PWA -->
+    <script>
+        // ایجاد manifest پویا
+        const manifest = {
+            "name": "ماشین حساب طلا",
+            "short_name": "طلاسنج",
+            "description": "برنامه محاسبه قیمت فروش طلا با در نظر گرفتن اجرت، سود، مالیات و وزن - اطلاعات فقط در گوشی شما ذخیره می‌شود",
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#121212",
+            "theme_color": "#D4AF37",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%23D4AF37%22>💰</text></svg>",
+                    "sizes": "any",
+                    "type": "image/svg+xml"
+                }
+            ]
+        };
+        
+        // ایجاد تگ manifest
+        const manifestEl = document.createElement('link');
+        manifestEl.rel = 'manifest';
+        manifestEl.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/json' }));
+        document.head.appendChild(manifestEl);
+    </script>
+</body>
+</html>
