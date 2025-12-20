@@ -433,14 +433,7 @@
                 <input type="text" id="goldPrice" placeholder="مثال: 12,300,000" data-type="price">
             </div>
             
-            <div class="input-group">
-                <label for="karat">عیار طلا</label>
-                <select id="karat">
-                    <option value="750">۱۸ عیار (750)</option>
-                    <option value="900">۲۱ عیار (900)</option>
-                    <option value="1000">۲۴ عیار (1000)</option>
-                </select>
-            </div>
+            <!-- Dropdown عیار حذف شده است -->
             
             <div class="input-group">
                 <label for="wagePercent">درصد اجرت ساخت (%)</label>
@@ -637,44 +630,74 @@
             });
         });
         
-        // تابع گرفتن تاریخ و زمان شمسی
+        // تابع گرفتن تاریخ و زمان شمسی - نسخه اصلاح شده و دقیق
         function getPersianDateTime() {
             const now = new Date();
             
-            // تاریخ شمسی ساده شده (برای نمایش)
-            const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
-            
-            // محاسبه تاریخ شمسی (الگوریتم ساده شده)
-            const gregorianYear = now.getFullYear();
-            const gregorianMonth = now.getMonth() + 1;
-            const gregorianDay = now.getDate();
-            
-            // تبدیل ساده (این الگوریتم دقیق نیست، برای نمایش استفاده می‌شود)
-            let persianYear = gregorianYear - 621;
-            let persianMonth, persianDay;
-            
-            if (gregorianMonth < 4 || (gregorianMonth === 4 && gregorianDay < 21)) {
-                persianYear--;
-                persianMonth = (gregorianMonth + 8) % 12 + 1;
-                persianDay = gregorianDay + 20;
-                if (persianDay > 31) {
-                    persianDay -= 31;
-                    persianMonth++;
+            // استفاده از API Intl برای نمایش تاریخ شمسی - روش دقیق‌تر
+            // اگر مرورگر از Persian (fa) پشتیبانی کند
+            try {
+                const persianDate = new Intl.DateTimeFormat('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                }).format(now);
+                
+                return persianDate;
+            } catch (e) {
+                // در صورت عدم پشتیبانی مرورگر، از روش ساده‌تر استفاده می‌کنیم
+                const gregorianYear = now.getFullYear();
+                const gregorianMonth = now.getMonth() + 1;
+                const gregorianDay = now.getDate();
+                
+                // الگوریتم تبدیل میلادی به شمسی (نسخه بهبودیافته)
+                // این الگوریتم برای سال‌های اخیر دقیق‌تر است
+                let persianYear, persianMonth, persianDay;
+                
+                // آرایه روزهای شروع ماه‌های شمسی
+                const startDays = [0, 31, 62, 93, 124, 155, 186, 216, 246, 276, 306, 336];
+                
+                // محاسبه روز از ابتدای سال میلادی
+                const dayOfYear = Math.floor((now - new Date(gregorianYear, 0, 0)) / 86400000);
+                
+                // محاسبه سال شمسی
+                persianYear = gregorianYear - 621;
+                
+                // محاسبه روز از ابتدای سال شمسی
+                let persianDayOfYear = dayOfYear - 79;
+                if (persianDayOfYear <= 0) {
+                    persianYear--;
+                    persianDayOfYear += (gregorianYear % 4 === 0 || gregorianYear % 400 === 0) ? 366 : 365;
                 }
-            } else {
-                persianMonth = (gregorianMonth + 8) % 12 + 1;
-                persianDay = gregorianDay - 20;
-                if (persianDay < 1) {
-                    persianDay += 31;
-                    persianMonth--;
+                
+                // محاسبه ماه شمسی
+                for (persianMonth = 0; persianMonth < 12; persianMonth++) {
+                    if (persianDayOfYear <= startDays[persianMonth + 1]) {
+                        break;
+                    }
                 }
+                
+                // محاسبه روز شمسی
+                persianDay = persianDayOfYear - startDays[persianMonth];
+                persianMonth++; // تبدیل از index به شماره ماه
+                
+                // زمان
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                
+                // نام ماه‌های شمسی
+                const persianMonthNames = [
+                    'فروردین', 'اردیبهشت', 'خرداد', 
+                    'تیر', 'مرداد', 'شهریور', 
+                    'مهر', 'آبان', 'آذر', 
+                    'دی', 'بهمن', 'اسفند'
+                ];
+                
+                return `${persianYear}/${persianMonthNames[persianMonth-1]}/${persianDay} - ${hours}:${minutes}`;
             }
-            
-            // زمان
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            
-            return `${persianYear}/${persianMonth}/${persianDay} - ${hours}:${minutes}`;
         }
         
         // تب اول: محاسبه قیمت فروش طلا
@@ -684,7 +707,6 @@
         calculateBtn1.addEventListener('click', function() {
             // دریافت مقادیر ورودی
             const goldPrice = parseFormattedNumber(document.getElementById('goldPrice').value);
-            const karat = parseFloat(document.getElementById('karat').value);
             const wagePercent = parseFloat(document.getElementById('wagePercent').value);
             const profitPercent = parseFloat(document.getElementById('profitPercent').value);
             const taxPercent = parseFloat(document.getElementById('taxPercent').value);
@@ -734,7 +756,6 @@
             // ذخیره در تاریخچه
             saveToHistory1({
                 goldPrice: goldPrice,
-                karat: karat,
                 wagePercent: wagePercent,
                 profitPercent: profitPercent,
                 taxPercent: taxPercent,
@@ -835,20 +856,14 @@
             
             historyList.innerHTML = '';
             history.forEach(item => {
-                // تعیین نام عیار بر اساس مقدار
-                let karatName = '';
-                if (item.karat === 750) karatName = '۱۸ عیار';
-                else if (item.karat === 900) karatName = '۲۱ عیار';
-                else if (item.karat === 1000) karatName = '۲۴ عیار';
-                else karatName = item.karat;
-                
+                // به صورت خودکار "۱۸ عیار" نمایش داده می‌شود
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
                 historyItem.innerHTML = `
                     <div class="history-datetime">📅 ${item.dateTime}</div>
                     <div class="history-details">
                         <div>وزن طلا: ${item.weight} گرم</div>
-                        <div>عیار طلا: ${karatName}</div>
+                        <div>عیار طلا: ۱۸ عیار</div>
                         <div>درصد اجرت: ${item.wagePercent}%</div>
                         <div>درصد مالیات: ${item.taxPercent}%</div>
                         <div>درصد سود: ${item.profitPercent}%</div>
