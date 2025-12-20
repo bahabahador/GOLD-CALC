@@ -1,7 +1,4 @@
 <!DOCTYPE html>
-
-</head>
-
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -150,7 +147,7 @@
             font-weight: 600;
         }
         
-        input {
+        input, select {
             width: 100%;
             padding: 14px;
             background-color: #1e1e1e;
@@ -161,7 +158,7 @@
             transition: border-color 0.3s ease;
         }
         
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: #D4AF37;
         }
@@ -414,7 +411,7 @@
     <div class="container">
         <header>
             <h1>🧮 ماشین حساب طلا</h1>
-            <p class="app-description">محاسبه دقیق قیمت طلا با در نظر گرفتن اجرت، سود، مالیات و نرخ خرید/تعویش طلا</p>
+            <p class="app-description">محاسبه دقیق قیمت طلا با در نظر گرفتن اجرت، سود، مالیات و نرخ خرید/تعویض طلا</p>
         </header>
                 
         <div class="tabs">
@@ -434,6 +431,15 @@
             <div class="input-group">
                 <label for="goldPrice">قیمت طلای خام (تومان برای یک گرم)</label>
                 <input type="text" id="goldPrice" placeholder="مثال: 12,300,000" data-type="price">
+            </div>
+            
+            <div class="input-group">
+                <label for="karat">عیار طلا</label>
+                <select id="karat">
+                    <option value="750">۱۸ عیار (750)</option>
+                    <option value="900">۲۱ عیار (900)</option>
+                    <option value="1000">۲۴ عیار (1000)</option>
+                </select>
             </div>
             
             <div class="input-group">
@@ -513,12 +519,18 @@
                 <input type="text" id="goldPrice750" placeholder="مثال: 3,000,000" data-type="price">
             </div>
             
+            <div class="input-group">
+                <label for="weight2">وزن طلا (گرم) - اختیاری</label>
+                <input type="number" id="weight2" placeholder="مثال: 5.090 (اختیاری)" step="0.001" min="0">
+            </div>
+            
             <button class="calculate-btn" id="calculateBtn2">محاسبه قیمت‌ها</button>
             
             <div class="note">
                 <strong>فرمول‌های محاسبه:</strong><br>
                 قیمت خرید از مشتری (عیار ۷۳۵) = (قیمت طلای ۷۵۰ ÷ ۷۵۰) × ۷۳۵<br>
-                قیمت خرید/تعویض (عیار ۷۴۰) = (قیمت طلای ۷۵۰ ÷ ۷۵۰) × ۷۴۰
+                قیمت خرید/تعویض (عیار ۷۴۰) = (قیمت طلای ۷۵۰ ÷ ۷۵۰) × ۷۴۰<br>
+                اگر وزن وارد شود، قیمت نهایی = قیمت هر گرم × وزن
             </div>
             
             <div id="results2" class="results">
@@ -530,6 +542,14 @@
                 <div class="result-item">
                     <span class="result-label">قیمت خرید/تعویض (عیار ۷۴۰):</span>
                     <span class="result-value" id="price740">0 تومان</span>
+                </div>
+                <div class="result-item" id="final735Result" style="display: none;">
+                    <span class="result-label">قیمت نهایی خرید (۷۳۵):</span>
+                    <span class="result-value" id="finalPrice735">0 تومان</span>
+                </div>
+                <div class="result-item" id="final740Result" style="display: none;">
+                    <span class="result-label">قیمت نهایی تعویض (۷۴۰):</span>
+                    <span class="result-value" id="finalPrice740">0 تومان</span>
                 </div>
             </div>
             
@@ -664,6 +684,7 @@
         calculateBtn1.addEventListener('click', function() {
             // دریافت مقادیر ورودی
             const goldPrice = parseFormattedNumber(document.getElementById('goldPrice').value);
+            const karat = parseFloat(document.getElementById('karat').value);
             const wagePercent = parseFloat(document.getElementById('wagePercent').value);
             const profitPercent = parseFloat(document.getElementById('profitPercent').value);
             const taxPercent = parseFloat(document.getElementById('taxPercent').value);
@@ -713,6 +734,7 @@
             // ذخیره در تاریخچه
             saveToHistory1({
                 goldPrice: goldPrice,
+                karat: karat,
                 wagePercent: wagePercent,
                 profitPercent: profitPercent,
                 taxPercent: taxPercent,
@@ -729,6 +751,7 @@
         calculateBtn2.addEventListener('click', function() {
             // دریافت قیمت طلای 750 عیار
             const goldPrice750 = parseFormattedNumber(document.getElementById('goldPrice750').value);
+            const weight2 = parseFloat(document.getElementById('weight2').value) || 0;
             
             // اعتبارسنجی
             if (!goldPrice750 || goldPrice750 <= 0) {
@@ -741,9 +764,34 @@
             const price735 = Math.round(pricePerUnit * 735);
             const price740 = Math.round(pricePerUnit * 740);
             
+            // محاسبه قیمت نهایی اگر وزن وارد شده باشد
+            let finalPrice735 = 0;
+            let finalPrice740 = 0;
+            let hasWeight = false;
+            
+            if (weight2 && weight2 > 0) {
+                finalPrice735 = Math.round(price735 * weight2);
+                finalPrice740 = Math.round(price740 * weight2);
+                hasWeight = true;
+            }
+            
             // نمایش نتایج
-            document.getElementById('price735').textContent = formatNumber(price735) + ' تومان';
-            document.getElementById('price740').textContent = formatNumber(price740) + ' تومان';
+            document.getElementById('price735').textContent = formatNumber(price735) + ' تومان' + (hasWeight ? ' (هر گرم)' : '');
+            document.getElementById('price740').textContent = formatNumber(price740) + ' تومان' + (hasWeight ? ' (هر گرم)' : '');
+            
+            // نمایش یا مخفی کردن قیمت‌های نهایی
+            const final735Result = document.getElementById('final735Result');
+            const final740Result = document.getElementById('final740Result');
+            
+            if (hasWeight) {
+                document.getElementById('finalPrice735').textContent = formatNumber(finalPrice735) + ' تومان';
+                document.getElementById('finalPrice740').textContent = formatNumber(finalPrice740) + ' تومان';
+                final735Result.style.display = 'flex';
+                final740Result.style.display = 'flex';
+            } else {
+                final735Result.style.display = 'none';
+                final740Result.style.display = 'none';
+            }
             
             // نمایش بخش نتایج
             results2.style.display = 'block';
@@ -753,6 +801,9 @@
                 goldPrice750: goldPrice750,
                 price735: price735,
                 price740: price740,
+                weight: weight2,
+                finalPrice735: finalPrice735,
+                finalPrice740: finalPrice740,
                 dateTime: getPersianDateTime()
             });
         });
@@ -784,14 +835,24 @@
             
             historyList.innerHTML = '';
             history.forEach(item => {
+                // تعیین نام عیار بر اساس مقدار
+                let karatName = '';
+                if (item.karat === 750) karatName = '۱۸ عیار';
+                else if (item.karat === 900) karatName = '۲۱ عیار';
+                else if (item.karat === 1000) karatName = '۲۴ عیار';
+                else karatName = item.karat;
+                
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
                 historyItem.innerHTML = `
                     <div class="history-datetime">📅 ${item.dateTime}</div>
                     <div class="history-details">
-                        <div>قیمت طلا: ${formatNumber(item.goldPrice)} تومان</div>
-                        <div>وزن: ${item.weight} گرم</div>
-                        <div>اجرت: ${item.wagePercent}% - سود: ${item.profitPercent}% - مالیات: ${item.taxPercent}%</div>
+                        <div>وزن طلا: ${item.weight} گرم</div>
+                        <div>عیار طلا: ${karatName}</div>
+                        <div>درصد اجرت: ${item.wagePercent}%</div>
+                        <div>درصد مالیات: ${item.taxPercent}%</div>
+                        <div>درصد سود: ${item.profitPercent}%</div>
+                        <div>قیمت هر گرم: ${formatNumber(item.goldPrice)} تومان</div>
                         <div style="color:#D4AF37; margin-top:5px;">💰 قیمت نهایی: ${formatNumber(item.finalPrice)} تومان</div>
                     </div>
                 `;
@@ -828,12 +889,26 @@
             history.forEach(item => {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
+                
+                let weightInfo = '';
+                let finalPriceInfo = '';
+                
+                if (item.weight && item.weight > 0) {
+                    weightInfo = `<div>وزن: ${item.weight} گرم</div>`;
+                    finalPriceInfo = `
+                        <div>قیمت نهایی خرید (۷۳۵): ${formatNumber(item.finalPrice735)} تومان</div>
+                        <div>قیمت نهایی تعویض (۷۴۰): ${formatNumber(item.finalPrice740)} تومان</div>
+                    `;
+                }
+                
                 historyItem.innerHTML = `
                     <div class="history-datetime">📅 ${item.dateTime}</div>
                     <div class="history-details">
                         <div>قیمت طلای ۷۵۰: ${formatNumber(item.goldPrice750)} تومان</div>
                         <div>قیمت خرید (۷۳۵): ${formatNumber(item.price735)} تومان</div>
                         <div>قیمت تعویض (۷۴۰): ${formatNumber(item.price740)} تومان</div>
+                        ${weightInfo}
+                        ${finalPriceInfo}
                     </div>
                 `;
                 historyList.appendChild(historyItem);
